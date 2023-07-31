@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import com.lnight.contactscomposemultiplatform.contacts.domain.Contact
 import com.lnight.contactscomposemultiplatform.contacts.domain.ContactDataSource
 import com.lnight.contactscomposemultiplatform.contacts.domain.ContactValidator
+import com.lnight.contactscomposemultiplatform.core.filterLettersAndTruncate
+import com.lnight.contactscomposemultiplatform.core.truncateToLengthAndRemoveParagraphs
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,23 +92,41 @@ class ContactsListViewModel(
             }
             is ContactListEvent.OnEmailChanged -> {
                 newContact = newContact?.copy(
-                    email = event.value
+                    email = event.value.truncateToLengthAndRemoveParagraphs()
                 )
+                _state.update { it.copy(
+                    emailError = null
+                ) }
             }
             is ContactListEvent.OnFirstNameChanged -> {
                 newContact = newContact?.copy(
-                    firstName = event.value
+                    firstName = event.value.truncateToLengthAndRemoveParagraphs()
                 )
+                _state.update { it.copy(
+                    firstNameError = null
+                ) }
             }
             is ContactListEvent.OnLastNameChanged -> {
                 newContact = newContact?.copy(
-                    lastName = event.value
+                    lastName = event.value.truncateToLengthAndRemoveParagraphs()
                 )
+                _state.update { it.copy(
+                    lastNameError = null
+                ) }
             }
             is ContactListEvent.OnPhoneNumberChanged -> {
-                newContact = newContact?.copy(
-                    phoneNumber = event.value
-                )
+                val newNumber = event.value.filterLettersAndTruncate()
+
+                if(newNumber.isNotBlank()) {
+                    newContact = newContact?.copy(
+                        phoneNumber = newNumber
+                    )
+                    _state.update {
+                        it.copy(
+                            phoneNumberError = null
+                        )
+                    }
+                }
             }
             is ContactListEvent.OnPhotoPicked -> {
                 newContact = newContact?.copy(
@@ -155,4 +175,5 @@ class ContactsListViewModel(
             else -> Unit
         }
     }
+
 }

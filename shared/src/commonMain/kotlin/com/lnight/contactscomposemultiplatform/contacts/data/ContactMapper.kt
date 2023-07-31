@@ -1,15 +1,16 @@
 package com.lnight.contactscomposemultiplatform.contacts.data
 
 import com.lnight.contactscomposemultiplatform.contacts.domain.Contact
+import com.lnight.contactscomposemultiplatform.core.data.ImageStorage
 import database.ContactEntity
 
-fun ContactEntity.toContact(): Contact {
+suspend fun ContactEntity.toContact(imageStorage: ImageStorage): Contact {
     return Contact(
         id = id,
         firstName = firstName,
         lastName = lastName,
         email = email,
         phoneNumber = phoneNumber,
-        photoBytes = null // TODO Get the image
+        photoBytes = imagePath?.let { imageStorage.getImage(it) }
     )
 }

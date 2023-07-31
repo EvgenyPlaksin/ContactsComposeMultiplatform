@@ -21,15 +21,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lnight.contactscomposemultiplatform.contacts.domain.Contact
+import com.lnight.contactscomposemultiplatform.contacts.presentation.components.AddContactSheet
+import com.lnight.contactscomposemultiplatform.contacts.presentation.components.ContactDetailSheet
 import com.lnight.contactscomposemultiplatform.contacts.presentation.components.ContactListItem
+import com.lnight.contactscomposemultiplatform.contacts.presentation.components.RecentlyAddedContacts
+import com.lnight.contactscomposemultiplatform.core.presentation.ImagePicker
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun ContactsListScreen(
     state: ContactListState,
     newContact: Contact?,
-    onEvent: (ContactListEvent) -> Unit
+    onEvent: (ContactListEvent) -> Unit,
+    imagePicker: ImagePicker
 ) {
+    imagePicker.RegisterPicker { imageBytes ->
+        onEvent(ContactListEvent.OnPhotoPicked(imageBytes))
+    }
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -38,10 +46,10 @@ fun ContactsListScreen(
                 },
                 shape = RoundedCornerShape(20.dp)
             ) {
-               Icon(
-                   imageVector = Icons.Rounded.PersonAdd,
-                   contentDescription = "Add contact"
-               )
+                Icon(
+                    imageVector = Icons.Rounded.PersonAdd,
+                    contentDescription = "Add contact"
+                )
             }
         }
     ) {
@@ -50,6 +58,14 @@ fun ContactsListScreen(
             contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            item {
+                RecentlyAddedContacts(
+                    contactsList = state.recentlyAddedContacts,
+                    onClick = {
+                        onEvent(ContactListEvent.SelectContact(it))
+                    }
+                )
+            }
             item {
                 Text(
                     text = "My contacts (${state.contacts.size})",
@@ -73,4 +89,22 @@ fun ContactsListScreen(
             }
         }
     }
+
+    ContactDetailSheet(
+        isOpen = state.isSelectedContactSheetOpen,
+        selectedContact = state.selectedContact,
+        onEvent = onEvent
+    )
+
+    AddContactSheet(
+        state = state,
+        newContact = newContact,
+        isOpen = state.isAddContactSheetOpen,
+        onEvent = { event ->
+            if (event is ContactListEvent.OnAddPhotoClicked) {
+                imagePicker.pickImage()
+            }
+            onEvent(event)
+        },
+    )
 }

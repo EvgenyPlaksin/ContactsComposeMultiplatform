@@ -1,6 +1,9 @@
 package com.lnight.contactscomposemultiplatform
 
+import androidx.compose.ui.interop.LocalUIViewController
 import androidx.compose.ui.window.ComposeUIViewController
+import com.lnight.contactscomposemultiplatform.core.presentation.ImagePickerFactory
+import com.lnight.contactscomposemultiplatform.di.AppModule
 import platform.UIKit.UIUserInterfaceStyle
 
 fun MainViewController = ComposeUIViewController {
@@ -8,6 +11,8 @@ fun MainViewController = ComposeUIViewController {
             UIUserInterfaceStyle.UIUserInterfaceStyleDark
     App(
         darkTheme = isDarkTheme,
-        dynamicColor = false
+        dynamicColor = false,
+        appModule = AppModule(),
+        imagePicker = ImagePickerFactory(LocalUIViewController.current).createPicker()
     )
 }
